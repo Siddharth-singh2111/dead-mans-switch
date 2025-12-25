@@ -1,4 +1,5 @@
 // server/server.js
+require('dotenv').config(); // Load environment variables first
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -13,7 +14,8 @@ app.use(cors());
 app.use(express.json());
 
 // --- CONFIGURATION ---
-const MONGO_URI = "mongodb+srv://crackercode01_db_user:Sid123@cluster0.fvtcjrp.mongodb.net/?appName=Cluster0";
+// Now reads safely from your .env file
+const MONGO_URI = process.env.MONGO_URI; 
 
 // STORAGE
 const storage = multer.diskStorage({
@@ -119,7 +121,6 @@ mongoose.connect(MONGO_URI)
         console.error("Timer Error:", err.message);
       }
     });
-    
 
     // 2. START THE SERVER
     const PORT = 5000;
