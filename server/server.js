@@ -10,6 +10,7 @@ const User = require('./models/User');
 const sendEmail = require('./emailService');
 
 const app = express();
+const fs = require('fs'); // <--- ADD THIS
 app.use(cors());
 app.use(express.json());
 
@@ -27,9 +28,12 @@ const upload = multer({ storage: storage });
 // --- ROUTES ---
 
 // 1. CREATE VAULT
+
 app.post('/api/upload', upload.single('encryptedFile'), async (req, res) => {
   try {
-    const { email, trusteeEmail, serverKeyPart, iv } = req.body;
+    // Read 'checkInInterval' from the request body
+    const { email, trusteeEmail, serverKeyPart, iv, checkInInterval } = req.body;
+    
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ error: "User already has a vault." });
 
@@ -37,15 +41,16 @@ app.post('/api/upload', upload.single('encryptedFile'), async (req, res) => {
       email, trusteeEmail, serverKeyPart, iv,
       filePath: req.file.path,
       originalName: req.file.originalname,
-      lastCheckIn: Date.now()
+      lastCheckIn: Date.now(),
+      checkInInterval: parseInt(checkInInterval) // Ensure it is saved as a Number
     });
+    
     await newUser.save();
     res.json({ message: 'Vault Created Successfully!' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
 // 2. CHECK-IN
 app.post('/api/checkin', async (req, res) => {
   try {
@@ -86,7 +91,31 @@ app.get('/api/download/:filename', (req, res) => {
   const filePath = path.join(__dirname, 'uploads', req.params.filename);
   res.download(filePath);
 });
+// 5. KILL SWITCH (DELETE VAULT)
+app.delete('/api/vault', async (req, res) => {
+  try {
+    const { email } = req.body; // In real app, verify password/token here
+    const user = await User.findOne({ email });
+    
+    if (!user) return res.status(404).json({ error: "Vault not found" });
 
+    // 1. Delete the physical file
+    if (user.filePath) {
+      fs.unlink(user.filePath, (err) => {
+        if (err) console.error("Failed to delete file:", err);
+      });
+    }
+
+    // 2. Delete the Database Record
+    await User.deleteOne({ email });
+    
+    console.log(`🗑 Vault destroyed for ${email}`);
+    res.json({ message: "Vault destroyed. You are free." });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // --- INITIALIZATION ---
 console.log("⏳ Connecting to MongoDB...");
