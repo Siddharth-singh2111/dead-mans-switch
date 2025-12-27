@@ -2,6 +2,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import Webcam from 'react-webcam';
+import API_URL from './apiConfig';
 import { encryptFile } from './utils';
 import Unlock from './Unlock';
 import { 
@@ -51,7 +52,7 @@ function App() {
       formData.append('checkInInterval', interval); 
 
       setStatus("Sealing Vault...");
-      await axios.post('http://localhost:5000/api/upload', formData, {
+      await axios.post(`${API_URL}/api/upload`, formData, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setStatus("Vault Sealed Successfully");
@@ -66,7 +67,7 @@ function App() {
   const performCheckIn = async () => {
     if (!email) return alert("Identity verification failed: Email required.");
     try {
-      await axios.post('http://localhost:5000/api/checkin', { email });
+      await axios.post(`${API_URL}/api/checkin`, { email });
       setCheckInStatus("Identity Verified. Timer Reset.");
       setTimeout(() => setCheckInStatus(''), 3000);
     } catch (error) {
@@ -93,7 +94,7 @@ function App() {
     if (!confirm) return;
 
     try {
-      await axios.delete('http://localhost:5000/api/vault', { data: { email } });
+      await axios.delete(`${API_URL}/api/vault`, { data: { email } });
       alert("Vault Destroyed. All records wiped.");
       window.location.reload(); 
     } catch (error) {

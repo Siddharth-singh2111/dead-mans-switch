@@ -1,6 +1,7 @@
 // client/src/Unlock.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_URL from './apiConfig';
 import { decryptFile } from './utils';
 
 const Unlock = () => {
@@ -11,11 +12,11 @@ const Unlock = () => {
   const handleUnlock = async () => {
     try {
       setStatus("Querying Ledger...");
-      const { data: meta } = await axios.get(`http://localhost:5000/api/status/${email}`);
+      const { data: meta } = await axios.get(`${API_URL}/api/status/${email}`);
       
-      setStatus("Retrieving Asset...");
-      const response = await axios.get(`http://localhost:5000/api/download/${meta.filename}`, {
-        responseType: 'blob' 
+    
+     const response = await axios.get(`${API_URL}/api/download/${meta.filename}`, {
+         responseType: 'blob'
       });
 
       setStatus("Applying Decryption Key...");
