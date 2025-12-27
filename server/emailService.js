@@ -1,39 +1,37 @@
 // server/emailService.js
-require('dotenv').config(); 
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 const sendEmail = async (to, subject, text) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com", // Explicit host
-      port: 587,              // Standard TLS port
-      secure: false,          // Must be false for port 587
-      requireTLS: true,       // Force TLS security
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      // Add these timeouts to prevent hanging
-      connectionTimeout: 10000, 
-      socketTimeout: 10000,
-    });
+  // 1. Get Keys from Environment Variables (We will add these next)
+  const serviceId = process.env.EMAILJS_SERVICE_ID;
+  const templateId = process.env.EMAILJS_TEMPLATE_ID;
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+  const privateKey = process.env.EMAILJS_PRIVATE_KEY; // Optional security
 
-    const mailOptions = {
-      from: `"Dead Man's Switch" <${process.env.EMAIL_USER}>`,
-      to: to,
-      subject: subject,
-      text: text, 
+  try {
+    console.log(`🚀 Attempting to send email via EmailJS API to ${to}...`);
+
+    // 2. Prepare the Payload
+    const data = {
+      service_id: serviceId,
+      template_id: templateId,
+      user_id: publicKey,
+      template_params: {
+        to_email: to,       // Must match the variable in EmailJS template if you set one
+        subject: subject,
+        message: text,
+      },
+      accessToken: privateKey, // To allow server-side sending
     };
 
-    console.log(`Attempting to send email to ${to}...`);
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent successfully: ${info.response}`);
-    return info;
+    // 3. Send the HTTP Request (Port 443 - Bypasses Firewall)
+    const response = await axios.post('https://api.emailjs.com/api/v1.0/email/send', data);
+    
+    console.log(`✅ Email sent successfully! Status: ${response.status}`);
+    return response.data;
 
   } catch (error) {
-    console.error("❌ Email failed to send:", error.message);
-    // Return a mock success so the server doesn't crash during the demo
-    return { response: "Simulation: Email logged but network timed out." };
+    console.error("❌ Email API Failed:", error.response ? error.response.data : error.message);
   }
 };
 
