@@ -60,7 +60,7 @@ To run this project locally on your machine:
 ```bash
 git clone [https://github.com/Siddharth-singh2111/dead-mans-switch.git](https://github.com/Siddharth-singh2111/dead-mans-switch.git)
 cd dead-mans-switch
-
+```
 
 cd server
 npm install
