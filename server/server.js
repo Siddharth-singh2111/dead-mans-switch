@@ -146,7 +146,7 @@ mongoose.connect(MONGO_URI)
             user.status = 'executed';
             await user.save();
 
-            const downloadLink = `https://dead-mans-switch-eight.vercel.app/unlock`;
+            const downloadLink = `https://dead-mans-switch-eight.vercel.app/?mode=claim`;
             const emailBody = `URGENT: ${user.email} is gone. Access vault here: ${downloadLink}`;
             
             await sendEmail(user.trusteeEmail, "Dead Man's Switch Triggered", emailBody);

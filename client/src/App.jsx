@@ -1,5 +1,5 @@
 // client/src/App.jsx
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState,useEffect ,useRef, useCallback } from 'react';
 import axios from 'axios';
 import Webcam from 'react-webcam';
 import API_URL from './apiConfig';
@@ -18,6 +18,13 @@ import {
 function App() {
   const [view, setView] = useState('upload'); 
 
+  useEffect(() => {
+    // Check if the URL has "?mode=claim"
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'claim') {
+      setView('unlock'); // Automatically switch to Unlock view
+    }
+  }, []);
   // --- STATE ---
   const [file, setFile] = useState(null);
   const [email, setEmail] = useState('');
