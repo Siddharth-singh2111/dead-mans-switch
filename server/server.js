@@ -11,6 +11,12 @@ const sendEmail = require('./emailService');
 
 const app = express();
 const fs = require('fs'); // <--- ADD THIS
+
+const dir = './uploads';
+if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+    console.log("📂 Created 'uploads' directory");
+}
 app.use(cors());
 app.use(express.json());
 
